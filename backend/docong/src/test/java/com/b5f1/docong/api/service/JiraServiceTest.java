@@ -4,6 +4,7 @@ import com.b5f1.docong.api.dto.request.SaveJiraInfoReqDto;
 import com.b5f1.docong.api.exception.CustomException;
 import com.b5f1.docong.api.exception.ErrorCode;
 import com.b5f1.docong.core.domain.group.Team;
+import com.b5f1.docong.core.domain.group.TeamUser;
 import com.b5f1.docong.core.domain.todo.Todo;
 import com.b5f1.docong.core.domain.user.User;
 import com.b5f1.docong.core.repository.*;
@@ -32,6 +33,9 @@ class JiraServiceTest {
     private UserRepository userRepository;
 
     @Autowired
+    private TeamUserRepository teamUserRepository;
+
+    @Autowired
     private JiraService jiraService;
 
     @BeforeEach
@@ -41,7 +45,6 @@ class JiraServiceTest {
     }
 
     private Team savedTeam;
-
     private User savedUser;
 
     @Test
@@ -60,7 +63,7 @@ class JiraServiceTest {
         assertThat(team.getJiraProjectKey()).isEqualTo("TEST");
     }
 
-//    @Test
+    @Test
     public void saveIssueTest() throws Exception {
         Long seq = savedTeam.getSeq();
         Long userSeq = savedUser.getSeq();
@@ -68,7 +71,7 @@ class JiraServiceTest {
 
         jiraService.saveTeamJira(seq, userSeq, reqDto);
 
-        ArrayList<String> issueIds = jiraService.saveIssue(seq, userSeq);
+        ArrayList<String> issueIds = jiraService.saveIssue(seq);
 
         for (String issueId: issueIds) {
             Todo todo = todoRepository.findByJiraIssueId(issueId);
@@ -104,6 +107,12 @@ class JiraServiceTest {
                 .name("Test-Team")
                 .build();
         savedTeam = teamRepository.save(team);
-        System.out.println("Team:" + savedTeam.getSeq());
+
+        TeamUser teamUser = TeamUser.builder()
+                .team(savedTeam)
+                .user(savedUser)
+                .leader(true)
+                .build();
+        teamUserRepository.save(teamUser);
     }
 }

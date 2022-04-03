@@ -43,4 +43,13 @@ public class TeamUserQueryRepositoryImpl implements TeamUserQueryRepository {
                 .where(teamUser.user.seq.eq(userSeq),teamUser.team.seq.eq(teamSeq))
                 .fetchOne());
     }
+
+    @Override
+    public Long findLeaderIdWithTeamId(Long teamSeq) {
+        return query
+                .selectFrom(teamUser)
+                .where(teamUser.leader.eq(true))
+                .fetchOne()
+                .getSeq();
+    }
 }

@@ -5,8 +5,13 @@ import com.b5f1.docong.api.dto.request.SaveTodoReqDto;
 import com.b5f1.docong.api.exception.CustomException;
 import com.b5f1.docong.api.exception.ErrorCode;
 import com.b5f1.docong.core.domain.group.Team;
+import com.b5f1.docong.core.domain.group.TeamUser;
 import com.b5f1.docong.core.domain.todo.Todo;
+import com.b5f1.docong.core.domain.todo.WorkImportance;
+import com.b5f1.docong.core.domain.todo.WorkProficiency;
+import com.b5f1.docong.core.domain.todo.WorkType;
 import com.b5f1.docong.core.domain.user.User;
+import com.b5f1.docong.core.queryrepository.TeamUserQueryRepository;
 import com.b5f1.docong.core.repository.TeamRepository;
 import com.b5f1.docong.core.repository.TodoRepository;
 import com.b5f1.docong.core.repository.UserRepository;
@@ -40,6 +45,7 @@ import java.util.Optional;
 public class JiraServiceImpl implements JiraService{
 
     private final TeamRepository teamRepository;
+    private final TeamUserQueryRepository teamUserQueryRepository;
     private final TodoRepository todoRepository;
     private final UserRepository userRepository;
     private final TodoService todoService;
@@ -52,20 +58,26 @@ public class JiraServiceImpl implements JiraService{
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.TEAM_NOT_FOUND));
 
+        Optional<TeamUser> teamUser = teamUserQueryRepository.findTeamUserWithUserIdAndTeamId(userId, id);
+        if (!teamUser.get().isLeader()) {
+            throw new CustomException(ErrorCode.INVALID_USER);
+        }
+
         String encryptKey = encrypt(reqDto.getJiraAPIToken().getBytes());
 
         team.changeJiraInfo(reqDto.getJiraDomain(), reqDto.getJiraUserId(), encryptKey, reqDto.getJiraProjectKey());
     }
 
     @Override
-    public ArrayList<String> saveIssue(Long id, Long userId) {
-        // user 정보 가져오기
-        Optional<User> user = userRepository.findById(userId);
-        String userEmail = user.get().getEmail();
-
+    public ArrayList<String> saveIssue(Long id) {
         // team jira 정보 가져오기
         Team team = teamRepository.findById(id)
                 .orElseThrow(() -> new CustomException(ErrorCode.TEAM_NOT_FOUND));
+
+        // 리더 정보 가져오기
+        Long leaderId = teamUserQueryRepository.findLeaderIdWithTeamId(id);
+        Optional<User> user = userRepository.findById(leaderId);
+        String userEmail = user.get().getEmail();
 
         String domain = team.getJiraDomain();
         String userID = team.getJiraUserId();
@@ -119,7 +131,7 @@ public class JiraServiceImpl implements JiraService{
 
             // 상태가 todo이고 isuueId가 없을 경우에만 저장
             if (status.equals("해야 할 일") && !findIssue(issueId)) {
-                SaveTodoReqDto todoReqDto = new SaveTodoReqDto(title, content, id, userEmail, null, null, null, null);
+                SaveTodoReqDto todoReqDto = new SaveTodoReqDto(title, content, id, userEmail, WorkProficiency.중급, WorkType.기타, WorkImportance.중, 1);
 
                 Long todoSeq = todoService.saveTodo(todoReqDto);
 

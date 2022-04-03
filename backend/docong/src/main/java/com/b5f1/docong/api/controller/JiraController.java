@@ -27,9 +27,8 @@ public class JiraController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<BaseResponseEntity> saveIssue(@Auth User user,
-                                                        @PathVariable Long id) {
-        jiraService.saveIssue(id, user.getSeq());
+    public ResponseEntity<BaseResponseEntity> saveIssue(@PathVariable Long id) {
+        jiraService.saveIssue(id);
         return ResponseEntity.status(200).body(new BaseResponseEntity(200, "Success"));
     }
 }

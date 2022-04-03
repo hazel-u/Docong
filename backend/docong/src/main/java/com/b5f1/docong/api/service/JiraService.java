@@ -6,7 +6,7 @@ import java.util.ArrayList;
 
 public interface JiraService {
     void saveTeamJira(Long id, Long userId, SaveJiraInfoReqDto reqDto);
-    ArrayList<String> saveIssue(Long id, Long userId);
+    ArrayList<String> saveIssue(Long id);
     Boolean findIssue(String jiraIssueId);
     String encrypt(byte[] APIToken);
     String decrypt(byte[] APIToken);
