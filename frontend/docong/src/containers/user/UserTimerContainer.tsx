@@ -116,12 +116,12 @@ function UserTimerContainer() {
 
   useEffect(() => {
     return () => {
-      if (status == 'play') {
+      if (status === 'play') {
         dispatch(changeUserTimerStatus('stop'))
         dispatch(changeUserTimerTime(selectedType.time))
-        if (selectedTodo) {
-          changeTodoActivate(false)
-        }
+      }
+      if (selectedTodo) {
+        changeTodoActivate(false)
       }
     }
   }, [])

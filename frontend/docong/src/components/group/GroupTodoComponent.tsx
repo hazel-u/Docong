@@ -273,9 +273,7 @@ function GroupTodoComponent({
 
   const onClickStartTodoTimer = () => {
     if (selectedTodo && userInfo) {
-      if (selectedTodo.activate === true) {
-        alert('이미 진행 중인 콩입니다!')
-      } else if (selectedTodo.status === 'DONE') {
+      if (selectedTodo.status === 'DONE') {
         alert('완료된 콩은 시작할 수 없습니다!')
         setSelectedTodo(null)
       } else if (selectedTodo.userEmail !== userInfo.email) {
